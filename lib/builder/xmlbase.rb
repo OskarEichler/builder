@@ -155,7 +155,7 @@ module Builder
     end
 
     def _escape_attribute(text)
-      result = _escape(text).gsub("\n", "&#10;").gsub("\r", "&#13;").
+      result = _escape(text).gsub("\t", "&#9;").gsub("\n", "&#10;").gsub("\r", "&#13;").
         gsub(%r{"}, '&quot;') # " WART
       result.gsub!("'", '&apos;') if @quote == "'"
       result
