@@ -128,7 +128,7 @@ if String.method_defined?(:encode)
           if string.ascii_only?
             string
           else
-            string = string.clone.force_encoding(ENCODING_UTF8)
+            string = string.dup.force_encoding(ENCODING_UTF8)
             if string.valid_encoding?
               string
             else
