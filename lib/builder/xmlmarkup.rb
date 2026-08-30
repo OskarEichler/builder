@@ -203,6 +203,10 @@ module Builder
 
     def comment!(comment_text)
       _ensure_no_block ::Kernel::block_given?
+      comment_string = ::String.try_convert(comment_text)
+      if comment_string && comment_string.include?("--")
+        ::Kernel::raise ::ArgumentError, "XML comments cannot contain --"
+      end
       _special("<!-- ", " -->", comment_text, nil)
     end
 
