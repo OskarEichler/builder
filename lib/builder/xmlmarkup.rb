@@ -250,7 +250,7 @@ module Builder
       if directive_tag == :xml
         a = { :version=>"1.0", :encoding=>"UTF-8" }
         attrs = a.merge attrs
-	@encoding = attrs[:encoding].downcase
+	_set_encoding(attrs[:encoding])
       end
       _special(
         "<?#{directive_tag}",
