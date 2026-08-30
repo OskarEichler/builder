@@ -27,7 +27,7 @@ module Builder
     def initialize(indent=0, initial=0, encoding='utf-8')
       @indent = indent
       @level  = initial
-      @encoding = encoding.downcase
+      _set_encoding(encoding)
     end
 
     def explicit_nil_handling?
@@ -130,19 +130,41 @@ module Builder
     private
 
     require 'builder/xchar'
+
+    def _set_encoding(encoding)
+      @encoding = encoding.downcase
+      @encoding_resolved = false
+    end
+
     if ::String.method_defined?(:encode)
       def _escape(text)
         result = XChar.encode(text)
+        target_encoding = _target_encoding
         begin
-          encoding = ::Encoding::find(@encoding)
-          raise Exception if encoding.dummy?
-          result.encode(encoding)
-        rescue
-          # if the encoding can't be supported, use numeric character references
-          result.
-            gsub(/[^\u0000-\u007F]/) {|c| "&##{c.ord};"}.
-            force_encoding('ascii')
+          return result.encode(target_encoding) if target_encoding
+        rescue ::EncodingError
+          # Fall through to numeric character references.
         end
+
+        # if the encoding can't be supported, use numeric character references
+        result.
+          gsub(/[^\u0000-\u007F]/) {|c| "&##{c.ord};"}.
+          force_encoding('ascii')
+      end
+
+      def _target_encoding
+        unless @encoding_resolved
+          @target_encoding = ::Encoding.find(@encoding)
+          if @target_encoding.dummy? || !@target_encoding.ascii_compatible?
+            @target_encoding = nil
+          end
+          @encoding_resolved = true
+        end
+
+        @target_encoding
+      rescue ::ArgumentError
+        @encoding_resolved = true
+        @target_encoding = nil
       end
     else
       def _escape(text)
