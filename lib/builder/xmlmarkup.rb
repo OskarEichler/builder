@@ -203,6 +203,10 @@ module Builder
 
     def comment!(comment_text)
       _ensure_no_block ::Kernel::block_given?
+      comment_string = ::String.try_convert(comment_text)
+      if comment_string && comment_string.include?("--")
+        ::Kernel::raise ::ArgumentError, "XML comments cannot contain --"
+      end
       _special("<!-- ", " -->", comment_text, nil)
     end
 
@@ -250,7 +254,7 @@ module Builder
       if directive_tag == :xml
         a = { :version=>"1.0", :encoding=>"UTF-8" }
         attrs = a.merge attrs
-	@encoding = attrs[:encoding].downcase
+	_set_encoding(attrs[:encoding])
       end
       _special(
         "<?#{directive_tag}",
